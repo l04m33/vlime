@@ -211,6 +211,11 @@ function! vlime#plugin#ConnectREPL(...)
                     \ 'SWANK-FUZZY']
 
     call s:MaybeSendSecret(conn)
+
+    " Switch to JSON
+    " " [s:KW('EMACS-REX'), a:cmd, a:pkg, a:thread]
+    call chansend(conn.channel.ch_id, "000026(:emacs-rex (vlime::use-json) :cl t 1)")
+    sleep   1
     call vlime#ChainCallbacks(
                 \ function(conn.ConnectionInfo, [v:true]),
                 \ function('s:OnConnectionInfoComplete'),
