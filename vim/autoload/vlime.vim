@@ -1707,11 +1707,14 @@ function! s:CheckReturnStatus(return_msg, caller)
 endfunction
 
 function! s:SYM(package, name)
-    return {'name': a:name, 'package': a:package}
+    "return {'name': a:name, 'package': a:package}
+    " TODO: only works for simple names; no || supported yet
+    return a:package . "::" . a:name
 endfunction
 
 function! s:KW(name)
-    return s:SYM('KEYWORD', a:name)
+    "return s:SYM('KEYWORD', a:name)
+    return ":" . a:name
 endfunction
 
 function! s:CL(name)

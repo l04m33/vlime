@@ -28,4 +28,7 @@
                (setf port p)
                nil))))
 
-(run 7002)
+
+(if (sb-posix:getenv "JS_SWANK_PORT")
+    (vlime::use-json)
+    (run 7002))
