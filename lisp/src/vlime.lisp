@@ -64,6 +64,7 @@
     (labels ((announce-swank-port (port)
                (setf swank-port port))
              (announce-vlime-port (port)
+  (format t "<INFO> [13:32:02] ~s - Server created: (#(127 0 0 1) ~d)" backend port)
                (when port-file
                  (with-open-file (pf port-file
                                   :direction :output
@@ -72,6 +73,7 @@
                    (with-standard-io-syntax
                      (write port :stream pf)))))
              (start-vlime-server (backend)
+               #+(or)
                (let ((to-connect
                        ; When connecting, use #(127 0 0 1) instead of #(0 0 0 0)
                        (if (> (loop for b across swank-interface sum b) 0)
@@ -83,7 +85,8 @@
                                                     to-connect swank-port
                                                     dont-close)
                    (declare (ignore server))
-                   (announce-vlime-port (nth 1 local-name)))))
+                   (announce-vlime-port (nth 1 local-name))))
+               (announce-vlime-port swank-port))
              (start-swank-server (announce-port)
                (let ((swank-loopback (symbol-value (find-symbol "*LOOPBACK-INTERFACE*" "SWANK"))))
                  ; This is... ugly and not safe at all, but we don't have access
