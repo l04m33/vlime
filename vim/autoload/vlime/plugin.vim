@@ -215,6 +215,7 @@ function! vlime#plugin#ConnectREPL(...)
     " Switch to JSON
     " " [s:KW('EMACS-REX'), a:cmd, a:pkg, a:thread]
     call chansend(conn.channel.ch_id, "000026(:emacs-rex (vlime::use-json) :cl t 1)")
+    " Need to wait!
     sleep   1
     call vlime#ChainCallbacks(
                 \ function(conn.ConnectionInfo, [v:true]),
