@@ -69,11 +69,11 @@ function! s:CheckAndReportReturnStatus(conn, return_msg, caller)
         return v:true
     elseif status['name'] == 'ABORT'
         call a:conn.ui.OnWriteString(a:conn, a:return_msg[1][1] . "\n",
-                    \ {'name': 'ABORT-REASON', 'package': 'KEYWORD'})
+                    \ vlime#KW('ABORT-REASON'))
         return v:false
     else
         call a:conn.ui.OnWriteString(a:conn, string(a:return_msg[1]),
-                    \ {'name': 'UNKNOWN-ERROR', 'package': 'KEYWORD'})
+                    \ vlime#KW('UNKNOWN-ERROR'))
         return v:false
     endif
 endfunction

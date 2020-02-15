@@ -211,7 +211,7 @@ function! s:EvalStringInCurFrameInputComplete(frame, thread, package)
                     \ function(b:vlime_conn.EvalStringInFrame,
                         \ [content, a:frame, a:package,
                             \ {c, r -> c.ui.OnWriteString(c, r . "\n",
-                                \ {'name': 'FRAME-EVAL-RESULT', 'package': 'KEYWORD'})}]))
+                                \ vlime#KW('FRAME-EVAL-RESULT'))}]))
     else
         call vlime#ui#ErrMsg('Canceled.')
     endif
@@ -239,7 +239,7 @@ function! s:SendValueInCurFrameToREPLInputComplete(frame, thread, package)
                         \ ['(setf cl-user::* #.(read-from-string "' . escape(content, '"') . '"))',
                             \ a:frame, a:package,
                             \ {c, r ->
-                                \ c.WithThread({'name': 'REPL-THREAD', 'package': 'KEYWORD'},
+                                \ c.WithThread(vlime#KW('REPL-THREAD'),
                                     \ function(c.ListenerEval, ['cl-user::*']))}]))
     else
         call vlime#ui#ErrMsg('Canceled.')

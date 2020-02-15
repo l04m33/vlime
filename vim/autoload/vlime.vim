@@ -542,8 +542,8 @@ endfunction
 " @public
 "
 " Interrupt {thread}.
-" {thread} should be a numeric thread ID, or {"package": "KEYWORD", "name":
-" "REPL-THREAD"} for the REPL thread. The debugger will be activated upon
+" {thread} should be a numeric thread ID, or vlime#KW("REPL-THREAD")
+" for the REPL thread. The debugger will be activated upon
 " interruption.
 function! vlime#Interrupt(thread) dict
     call self.Send([s:KW('EMACS-INTERRUPT'), a:thread])
