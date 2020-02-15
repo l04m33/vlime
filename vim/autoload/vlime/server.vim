@@ -203,7 +203,9 @@ function! vlime#server#BuildServerCommand(cl_impl)
                     \ string(cl_impl) . ' not supported'
     endif
 
-    return Builder(vlime_loader, '(vlime:main)')
+    " PM
+    echo 'BUILD'
+    return Builder(vlime_loader, '(vlime:main)') 
 endfunction
 
 function! s:MatchServerCreatedPort()

@@ -59,11 +59,15 @@
                   "Vlime: Communication style ~s not supported.~%" preferred-style)
           (return-from main)))))
 
+  (format t "========= backend: ~s~%" backend)
   (let ((swank-comm-style
           (dyn-call "SWANK/BACKEND" "PREFERRED-COMMUNICATION-STYLE")))
     (labels ((announce-swank-port (port)
+  (format t "========= announce-swank-port ~s~%" port)
                (setf swank-port port))
              (announce-vlime-port (port)
+  (format t "========= announce-vlime-port ~s ~s~%" port port-file)
+  ;(vom:info "Server created: ~s" (multiple-value-list (get-local-name socket)))
   (format t "<INFO> [13:32:02] ~s - Server created: (#(127 0 0 1) ~d)" backend port)
                (when port-file
                  (with-open-file (pf port-file
@@ -73,6 +77,7 @@
                    (with-standard-io-syntax
                      (write port :stream pf)))))
              (start-vlime-server (backend)
+  (format t "========= start-vlime-server ~s~%" backend)
                #+(or)
                (let ((to-connect
                        ; When connecting, use #(127 0 0 1) instead of #(0 0 0 0)
@@ -88,6 +93,7 @@
                    (announce-vlime-port (nth 1 local-name))))
                (announce-vlime-port swank-port))
              (start-swank-server (announce-port)
+  (format t "========= start-swank-server ~s~%" announce-port)
                (let ((swank-loopback (symbol-value (find-symbol "*LOOPBACK-INTERFACE*" "SWANK"))))
                  ; This is... ugly and not safe at all, but we don't have access
                  ; to the SWANK package when bootstrapping.

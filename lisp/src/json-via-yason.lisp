@@ -50,9 +50,19 @@
       (rec tree0))))
 
 (defun use-json ()
+  (with-open-file (da "/tmp/dsfg"
+                      :if-exists :append
+                      :direction :output
+                      :if-does-not-exist :create)
+    (format da "X~s~%" (multiple-value-list (get-decoded-time))))
   (swank::set-data-protocol
     #'encode-via-yason
     #'recover-symbols))
+
+
+#+(or)
+(recover-symbols 
+    "[\"§§:RETURN\",[\"§§:OK\",true],1]")
 
 
 #+(or)
