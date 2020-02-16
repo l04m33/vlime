@@ -16,16 +16,21 @@
           (yason:*symbol-key-encoder* #'yason::encode-symbol-as-string))
       (yason:encode obj s))))
 
-(defun recover-symbols (input)
+(defun recover-symbols (input &optional package)
+  (declare (ignore package))
   (labels 
       ((make-sym (stg)
-         (cond
-           ((alexandria:starts-with #\: stg)
-            ;; Just FIND-SYMBOL, or INTERN?
-            (find-symbol (subseq stg 1) :keyword))
-           (T
-            ;; get PKG::SYM
-            )))
+         (let* ((p (position #\: stg)))
+           (cond
+             ((zerop p)
+              ;; Just FIND-SYMBOL, or INTERN?
+              (find-symbol (subseq stg 1) :keyword))
+             (T
+              ;; get PKG::SYM
+              (assert (eql #\: (aref stg (1+ p))))
+              ;; intern?
+              (find-symbol (subseq stg (+ 2 p))
+                           (subseq stg 0 p))))))
        (rec (tree)
          (cond 
            ((null tree)

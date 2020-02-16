@@ -406,7 +406,7 @@ function! s:ShowFrameLocalsCB(frame, restartable, line, conn, result)
 endfunction
 
 function! s:ShowFrameSourceLocationCB(frame, line, conn, result)
-    if a:result[0]['name'] != 'LOCATION'
+    if a:result[0] != vlime#KW('LOCATION')
         call vlime#ui#ErrMsg(a:result[1])
         return
     endif
@@ -463,7 +463,7 @@ function! s:OpenFrameSourceCB(edit_cmd, win_to_go, force_open, conn, result)
         endif
 
         call vlime#ui#ShowSource(a:conn, valid_loc, a:edit_cmd, a:force_open)
-    elseif type(a:result) != type(v:null) && a:result[0]['name'] == 'ERROR'
+    elseif type(a:result) != type(v:null) && a:result[0] == vlime#KW('ERROR')
         call vlime#ui#ErrMsg(a:result[1])
     else
         call vlime#ui#ErrMsg('No source available.')

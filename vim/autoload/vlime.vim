@@ -224,10 +224,10 @@ function! vlime#FixRemotePath(path) dict
     if type(a:path) == v:t_string
         return self['remote_prefix'] . a:path
     elseif type(a:path) == v:t_list && type(a:path[0]) == v:t_dict
-                \ && a:path[0]['name'] == 'LOCATION'
-        if a:path[1][0]['name'] == 'FILE'
+                \ && a:path[0] == vlime#KW('LOCATION')
+        if a:path[1][0] == vlime#KW('FILE')
             let a:path[1][1] = self['remote_prefix'] . a:path[1][1]
-        elseif a:path[1][0]['name'] == 'BUFFER-AND-FILE'
+        elseif a:path[1][0] == vlime#KW('BUFFER-AND-FILE')
             let a:path[1][2] = self['remote_prefix'] . a:path[1][2]
         endif
         return a:path
@@ -426,7 +426,7 @@ function! vlime#EmacsChannelSend(chan_id, msg) dict
     if !has_key(self['remote_channels'], a:chan_id)
         throw 'vlime#EmacsChannelSend: channel ' . a:chan_id . ' does not exist'
     else
-        return [s:KW('EMACS-CHANNEL-SEND'), a:chan_id, a:msg]
+        return [vlime#KW('EMACS-CHANNEL-SEND'), a:chan_id, a:msg]
     endif
 endfunction
 
@@ -456,7 +456,7 @@ function! vlime#Ping() dict
     let cur_tag = self.ping_tag
     let self.ping_tag = (self.ping_tag >= 65536) ? 1 : (self.ping_tag + 1)
 
-    let result = self.Call(self.EmacsRex([s:SYM('SWANK', 'PING'), cur_tag]))
+    let result = self.Call(self.EmacsRex([vlime#Sym('SWANK', 'PING'), cur_tag]))
     if type(result) == v:t_string && len(result) == 0
         " Error or timeout
         throw 'vlime#Ping: failed'
@@ -476,7 +476,7 @@ endfunction
 " {thread} and {ttag} are parameters received in the PING message from the
 " server.
 function! vlime#Pong(thread, ttag) dict
-    call self.Send([s:KW('EMACS-PONG'), a:thread, a:ttag])
+    call self.Send([vlime#KW('EMACS-PONG'), a:thread, a:ttag])
 endfunction
 
 ""
@@ -505,7 +505,7 @@ function! vlime#ConnectionInfo(...) dict
 
     let return_dict = get(a:000, 0, v:true)
     let Callback = get(a:000, 1, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'CONNECTION-INFO')]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'CONNECTION-INFO')]),
                 \ function('s:ConnectionInfoCB', [self, Callback, return_dict]))
 endfunction
 
@@ -528,12 +528,12 @@ endfunction
 function! vlime#SwankRequire(contrib, ...) dict
     let Callback = get(a:000, 0, v:null)
     if type(a:contrib) == v:t_list
-        let required = [s:CL('QUOTE'), map(copy(a:contrib), {k, v -> s:KW(v)})]
+        let required = [vlime#Sym("COMMON-LISP", 'QUOTE'), map(copy(a:contrib), {k, v -> vlime#KW(v)})]
     else
-        let required = s:KW(a:contrib)
+        let required = vlime#KW(a:contrib)
     endif
 
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SWANK-REQUIRE'), required]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SWANK-REQUIRE'), required]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#SwankRequire']))
 endfunction
 
@@ -546,7 +546,7 @@ endfunction
 " for the REPL thread. The debugger will be activated upon
 " interruption.
 function! vlime#Interrupt(thread) dict
-    call self.Send([s:KW('EMACS-INTERRUPT'), a:thread])
+    call self.Send([vlime#KW('EMACS-INTERRUPT'), a:thread])
 endfunction
 
 ""
@@ -557,7 +557,7 @@ endfunction
 " When the debugger is active, invoke the ABORT restart.
 function! vlime#SLDBAbort(...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-ABORT')]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-ABORT')]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#SLDBAbort']))
 endfunction
 
@@ -569,7 +569,7 @@ endfunction
 " Set a breakpoint at entry to a function with the name {func_name}.
 function! vlime#SLDBBreak(func_name, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-BREAK'), a:func_name]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-BREAK'), a:func_name]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#SLDBBreak']))
 endfunction
@@ -582,7 +582,7 @@ endfunction
 " When the debugger is active, invoke the CONTINUE restart.
 function! vlime#SLDBContinue(...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-CONTINUE')]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-CONTINUE')]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#SLDBContinue']))
 endfunction
 
@@ -595,7 +595,7 @@ endfunction
 " {frame} should be a valid frame number presented by the debugger.
 function! vlime#SLDBStep(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-STEP'), a:frame]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-STEP'), a:frame]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#SLDBStep']))
 endfunction
 
@@ -607,7 +607,7 @@ endfunction
 " When the debugger is active, step over the current function call in {frame}.
 function! vlime#SLDBNext(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-NEXT'), a:frame]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-NEXT'), a:frame]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#SLDBNext']))
 endfunction
 
@@ -619,7 +619,7 @@ endfunction
 " When the debugger is active, step out of the current function in {frame}.
 function! vlime#SLDBOut(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-OUT'), a:frame]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-OUT'), a:frame]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#SLDBOut']))
 endfunction
 
@@ -634,7 +634,7 @@ endfunction
 " evaluated.
 function! vlime#SLDBReturnFromFrame(frame, str, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-RETURN-FROM-FRAME'), a:frame, a:str]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-RETURN-FROM-FRAME'), a:frame, a:str]),
                 \ function('s:SLDBSendCB',
                     \ [self, Callback, 'vlime#SLDBReturnFromFrame']))
 endfunction
@@ -647,7 +647,7 @@ endfunction
 " Disassemble the code for {frame}.
 function! vlime#SLDBDisassemble(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SLDB-DISASSEMBLE'), a:frame]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SLDB-DISASSEMBLE'), a:frame]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#SLDBDisassemble']))
 endfunction
@@ -663,7 +663,7 @@ endfunction
 function! vlime#InvokeNthRestartForEmacs(level, restart, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INVOKE-NTH-RESTART-FOR-EMACS'), a:level, a:restart]),
+                    \ [vlime#Sym('SWANK', 'INVOKE-NTH-RESTART-FOR-EMACS'), a:level, a:restart]),
                 \ function('s:SLDBSendCB', [self, Callback, 'vlime#InvokeNthRestartForEmacs']))
 endfunction
 
@@ -676,7 +676,7 @@ endfunction
 function! vlime#RestartFrame(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'RESTART-FRAME'), a:frame]),
+                    \ [vlime#Sym('SWANK', 'RESTART-FRAME'), a:frame]),
                 \ function('s:SLDBSendCB',
                     \ [self, Callback, 'vlime#RestartFrame']))
 endfunction
@@ -691,7 +691,7 @@ endfunction
 function! vlime#FrameLocalsAndCatchTags(frame, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'FRAME-LOCALS-AND-CATCH-TAGS'), a:frame]),
+                    \ [vlime#Sym('SWANK', 'FRAME-LOCALS-AND-CATCH-TAGS'), a:frame]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#FrameLocalsAndCatchTags']))
 endfunction
@@ -705,7 +705,7 @@ endfunction
 function! vlime#FrameSourceLocation(frame, ...) dict
     function! s:FrameSourceLocationCB(conn, Callback, chan, msg)
         call s:CheckReturnStatus(a:msg,  'vlime#FrameSourceLocation')
-        if a:msg[1][1][0]['name'] == 'LOCATION'
+        if a:msg[1][1] == vlime#KW('LOCATION')
             let fixed_loc = a:conn.FixRemotePath(a:msg[1][1])
         else
             let fixed_loc = a:msg[1][1]
@@ -715,7 +715,7 @@ function! vlime#FrameSourceLocation(frame, ...) dict
 
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'FRAME-SOURCE-LOCATION'), a:frame]),
+                    \ [vlime#Sym('SWANK', 'FRAME-SOURCE-LOCATION'), a:frame]),
                 \ function('s:FrameSourceLocationCB', [self, Callback]))
 endfunction
 
@@ -729,7 +729,7 @@ endfunction
 function! vlime#EvalStringInFrame(str, frame, package, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'EVAL-STRING-IN-FRAME'),
+                    \ [vlime#Sym('SWANK', 'EVAL-STRING-IN-FRAME'),
                         \ a:str, a:frame, a:package]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#EvalStringInFrame']))
@@ -747,7 +747,7 @@ endfunction
 function! vlime#InitInspector(thing, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INIT-INSPECTOR'), a:thing]),
+                    \ [vlime#Sym('SWANK', 'INIT-INSPECTOR'), a:thing]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InitInspector']))
 endfunction
@@ -761,7 +761,7 @@ endfunction
 function! vlime#InspectorReinspect(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECTOR-REINSPECT')]),
+                    \ [vlime#Sym('SWANK', 'INSPECTOR-REINSPECT')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectorReinspect']))
 endfunction
@@ -777,7 +777,7 @@ endfunction
 function! vlime#InspectorRange(r_start, r_end, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECTOR-RANGE'), a:r_start, a:r_end]),
+                    \ [vlime#Sym('SWANK', 'INSPECTOR-RANGE'), a:r_start, a:r_end]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectorRange']))
 endfunction
@@ -792,7 +792,7 @@ endfunction
 function! vlime#InspectNthPart(nth, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECT-NTH-PART'), a:nth]),
+                    \ [vlime#Sym('SWANK', 'INSPECT-NTH-PART'), a:nth]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectNthPart']))
 endfunction
@@ -807,7 +807,7 @@ endfunction
 function! vlime#InspectorCallNthAction(nth, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECTOR-CALL-NTH-ACTION'), a:nth]),
+                    \ [vlime#Sym('SWANK', 'INSPECTOR-CALL-NTH-ACTION'), a:nth]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectorCallNthAction']))
 endfunction
@@ -821,7 +821,7 @@ endfunction
 function! vlime#InspectorPop(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECTOR-POP')]),
+                    \ [vlime#Sym('SWANK', 'INSPECTOR-POP')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectorPop']))
 endfunction
@@ -835,7 +835,7 @@ endfunction
 function! vlime#InspectorNext(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECTOR-NEXT')]),
+                    \ [vlime#Sym('SWANK', 'INSPECTOR-NEXT')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectorNext']))
 endfunction
@@ -849,7 +849,7 @@ endfunction
 function! vlime#InspectCurrentCondition(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECT-CURRENT-CONDITION')]),
+                    \ [vlime#Sym('SWANK', 'INSPECT-CURRENT-CONDITION')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectCurrentCondition']))
 endfunction
@@ -864,7 +864,7 @@ endfunction
 function! vlime#InspectInFrame(thing, frame, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECT-IN-FRAME'), a:thing, a:frame]),
+                    \ [vlime#Sym('SWANK', 'INSPECT-IN-FRAME'), a:thing, a:frame]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectInFrame']))
 endfunction
@@ -878,7 +878,7 @@ endfunction
 function! vlime#InspectFrameVar(var_num, frame, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'INSPECT-FRAME-VAR'), a:frame, a:var_num]),
+                    \ [vlime#Sym('SWANK', 'INSPECT-FRAME-VAR'), a:frame, a:var_num]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#InspectFrameVar']))
 endfunction
@@ -892,7 +892,7 @@ endfunction
 function! vlime#ListThreads(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'LIST-THREADS')]),
+                    \ [vlime#Sym('SWANK', 'LIST-THREADS')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#ListThreads']))
 endfunction
@@ -907,7 +907,7 @@ endfunction
 function! vlime#KillNthThread(nth, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'KILL-NTH-THREAD'), a:nth]),
+                    \ [vlime#Sym('SWANK', 'KILL-NTH-THREAD'), a:nth]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#KillNthThread']))
 endfunction
@@ -922,7 +922,7 @@ endfunction
 function! vlime#DebugNthThread(nth, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'DEBUG-NTH-THREAD'), a:nth]),
+                    \ [vlime#Sym('SWANK', 'DEBUG-NTH-THREAD'), a:nth]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#DebugNthThread']))
 endfunction
@@ -936,7 +936,7 @@ endfunction
 function! vlime#UndefineFunction(func_name, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'UNDEFINE-FUNCTION'), a:func_name]),
+                    \ [vlime#Sym('SWANK', 'UNDEFINE-FUNCTION'), a:func_name]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#UndefineFunction']))
 endfunction
@@ -960,7 +960,7 @@ function! vlime#UninternSymbol(sym_name, ...) dict
     endif
 
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'UNINTERN-SYMBOL'), a:sym_name, pkg]),
+                    \ [vlime#Sym('SWANK', 'UNINTERN-SYMBOL'), a:sym_name, pkg]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#UninternSymbol']))
 endfunction
@@ -980,7 +980,7 @@ function! vlime#SetPackage(package, ...) dict
     endfunction
 
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'SET-PACKAGE'), a:package]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'SET-PACKAGE'), a:package]),
                 \ function('s:SetPackageCB', [self, bufnr('%'), Callback]))
 endfunction
 
@@ -993,7 +993,7 @@ endfunction
 " {symbol} should be a plain string containing the symbol name.
 function! vlime#DescribeSymbol(symbol, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'DESCRIBE-SYMBOL'), a:symbol]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'DESCRIBE-SYMBOL'), a:symbol]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#DescribeSymbol']))
 endfunction
 
@@ -1011,7 +1011,7 @@ function! vlime#OperatorArgList(operator, ...) dict
         let cur_package = cur_package[0]
     endif
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'OPERATOR-ARGLIST'), a:operator, cur_package]),
+                    \ [vlime#Sym('SWANK', 'OPERATOR-ARGLIST'), a:operator, cur_package]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#OperatorArgList']))
 endfunction
 
@@ -1029,16 +1029,16 @@ function! vlime#SimpleCompletions(symbol, ...) dict
         let cur_package = cur_package[0]
     endif
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'SIMPLE-COMPLETIONS'), a:symbol, cur_package]),
+                    \ [vlime#Sym('SWANK', 'SIMPLE-COMPLETIONS'), a:symbol, cur_package]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#SimpleCompletions']))
 endfunction
 
 function! vlime#ReturnString(thread, ttag, str) dict
-    call self.Send([s:KW('EMACS-RETURN-STRING'), a:thread, a:ttag, a:str])
+    call self.Send([vlime#KW('EMACS-RETURN-STRING'), a:thread, a:ttag, a:str])
 endfunction
 
 function! vlime#Return(thread, ttag, val) dict
-    call self.Send([s:KW('EMACS-RETURN'), a:thread, a:ttag, a:val])
+    call self.Send([vlime#KW('EMACS-RETURN'), a:thread, a:ttag, a:val])
 endfunction
 
 ""
@@ -1052,7 +1052,7 @@ endfunction
 function! vlime#SwankMacroExpandOne(expr, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'SWANK-MACROEXPAND-1'), a:expr]),
+                    \ [vlime#Sym('SWANK', 'SWANK-MACROEXPAND-1'), a:expr]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#SwankMacroExpandOne']))
 endfunction
 
@@ -1065,7 +1065,7 @@ endfunction
 function! vlime#SwankMacroExpand(expr, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'SWANK-MACROEXPAND'), a:expr]),
+                    \ [vlime#Sym('SWANK', 'SWANK-MACROEXPAND'), a:expr]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#SwankMacroExpand']))
 endfunction
 
@@ -1078,7 +1078,7 @@ endfunction
 function! vlime#SwankMacroExpandAll(expr, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'SWANK-MACROEXPAND-ALL'), a:expr]),
+                    \ [vlime#Sym('SWANK', 'SWANK-MACROEXPAND-ALL'), a:expr]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#SwankMacroExpandAll']))
 endfunction
 
@@ -1091,7 +1091,7 @@ endfunction
 function! vlime#DisassembleForm(expr, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'DISASSEMBLE-FORM'), a:expr]),
+                    \ [vlime#Sym('SWANK', 'DISASSEMBLE-FORM'), a:expr]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#DisassembleForm']))
 endfunction
 
@@ -1113,9 +1113,9 @@ function! vlime#CompileStringForEmacs(expr, buffer, position, filename, ...) dic
     let Callback = get(a:000, 1, v:null)
     let fixed_filename = self.FixLocalPath(a:filename)
     call self.Send(self.EmacsRex(
-                    \ [s:SYM('SWANK', 'COMPILE-STRING-FOR-EMACS'),
+                    \ [vlime#Sym('SWANK', 'COMPILE-STRING-FOR-EMACS'),
                         \ a:expr, a:buffer,
-                        \ [s:CL('QUOTE'), [[s:KW('POSITION'), a:position]]],
+                        \ [vlime#Sym("COMMON-LISP", 'QUOTE'), [[vlime#KW('POSITION'), a:position]]],
                         \ fixed_filename, policy]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#CompileStringForEmacs']))
 endfunction
@@ -1136,9 +1136,9 @@ function! vlime#CompileFileForEmacs(filename, ...) dict
     let policy = s:TransformCompilerPolicy(get(a:000, 1, v:null))
     let Callback = get(a:000, 2, v:null)
     let fixed_filename = self.FixLocalPath(a:filename)
-    let cmd = [s:SYM('SWANK', 'COMPILE-FILE-FOR-EMACS'), fixed_filename, load]
+    let cmd = [vlime#Sym('SWANK', 'COMPILE-FILE-FOR-EMACS'), fixed_filename, load]
     if type(policy) != type(v:null)
-        let cmd += [s:KW('POLICY'), policy]
+        let cmd += [vlime#KW('POLICY'), policy]
     endif
     call self.Send(self.EmacsRex(cmd),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#CompileFileForEmacs']))
@@ -1153,7 +1153,7 @@ endfunction
 function! vlime#LoadFile(filename, ...) dict
     let Callback = get(a:000, 0, v:null)
     let fixed_filename = self.FixLocalPath(a:filename)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'LOAD-FILE'), fixed_filename]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'LOAD-FILE'), fixed_filename]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#LoadFile']))
 endfunction
 
@@ -1174,7 +1174,7 @@ function! vlime#XRef(ref_type, name, ...) dict
     endfunction
 
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'XREF'), s:KW(a:ref_type), a:name]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'XREF'), vlime#KW(a:ref_type), a:name]),
                 \ function('s:XRefCB', [self, Callback]))
 endfunction
 
@@ -1192,7 +1192,7 @@ function! vlime#FindDefinitionsForEmacs(name, ...) dict
     endfunction
 
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'FIND-DEFINITIONS-FOR-EMACS'), a:name]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'FIND-DEFINITIONS-FOR-EMACS'), a:name]),
                 \ function('s:FindDefinitionsForEmacsCB', [self, Callback]))
 endfunction
 
@@ -1211,7 +1211,7 @@ endfunction
 function! vlime#FindSourceLocationForEmacs(spec, ...) dict
     function! s:FindSourceLocationForEmacsCB(conn, Callback, chan, msg)
         call s:CheckReturnStatus(a:msg, 'vlime#FindSourceLocationForEmacs')
-        if type(a:msg[1][1]) != type(v:null) && a:msg[1][1][0]['name'] == 'LOCATION'
+        if type(a:msg[1][1]) != type(v:null) && a:msg[1][1] == vlime#KW('LOCATION')
             let fixed_loc = a:conn.FixRemotePath(a:msg[1][1])
         else
             let fixed_loc = a:msg[1][1]
@@ -1221,9 +1221,9 @@ function! vlime#FindSourceLocationForEmacs(spec, ...) dict
 
     let Callback = get(a:000, 0, v:null)
     let spec_type = a:spec[0]
-    let spec = [s:CL('QUOTE'), [s:KW(spec_type)] + a:spec[1:]]
+    let spec = [vlime#Sym("COMMON-LISP", 'QUOTE'), [vlime#KW(spec_type)] + a:spec[1:]]
 
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'FIND-SOURCE-LOCATION-FOR-EMACS'), spec]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'FIND-SOURCE-LOCATION-FOR-EMACS'), spec]),
                 \ function('s:FindSourceLocationForEmacsCB', [self, Callback]))
 endfunction
 
@@ -1239,7 +1239,7 @@ endfunction
 " to search all packages.
 function! vlime#AproposListForEmacs(name, external_only, case_sensitive, package, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'APROPOS-LIST-FOR-EMACS'),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'APROPOS-LIST-FOR-EMACS'),
                     \ a:name, a:external_only, a:case_sensitive, a:package]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#AproposListForEmacs']))
 endfunction
@@ -1252,7 +1252,7 @@ endfunction
 " Find the documentation for symbol {sym_name}.
 function! vlime#DocumentationSymbol(sym_name, ...) dict
     let Callback = get(a:000, 0, v:null)
-    call self.Send(self.EmacsRex([s:SYM('SWANK', 'DOCUMENTATION-SYMBOL'), a:sym_name]),
+    call self.Send(self.EmacsRex([vlime#Sym('SWANK', 'DOCUMENTATION-SYMBOL'), a:sym_name]),
                 \ function('vlime#SimpleSendCB', [self, Callback, 'vlime#DocumentationSymbol']))
 endfunction
 
@@ -1363,8 +1363,9 @@ endfunction
 " ------------------ end of server event handlers ------------------
 
 function! vlime#OnServerEvent(chan, msg) dict
+    echomsg json_encode(a:msg)
     let msg_type = a:msg[0]
-    let Handler = get(self.server_event_handlers, msg_type['name'], v:null)
+    let Handler = get(self.server_event_handlers, vlime#SymbolName(msg_type), v:null)
     if type(Handler) == v:t_func
         call Handler(self, a:msg)
     elseif get(g:, '_vlime_debug', v:false)
@@ -1381,7 +1382,7 @@ endfunction
 
 function! s:SLDBSendCB(conn, Callback, caller, chan, msg) abort
     let status = a:msg[1][0]
-    if status['name'] != 'ABORT' && status['name'] != 'OK'
+    if status != vlime#KW('ABORT') && status != vlime#KW('OK')
         throw caller . ' returned: ' . string(a:msg[1])
     endif
     call s:TryToCall(a:Callback, [a:conn, a:msg[1][1]])
@@ -1391,6 +1392,7 @@ endfunction
 " @public
 "
 " Convert a {plist} sent from the server to a native |dict|.
+" The keys are only the symbol _name_, ie the package is lost!
 function! vlime#PListToDict(plist)
     if type(a:plist) == type(v:null)
         return {}
@@ -1399,7 +1401,11 @@ function! vlime#PListToDict(plist)
     let d = {}
     let i = 0
     while i < len(a:plist)
-        let d[a:plist[i]['name']] = a:plist[i+1]
+        let key = vlime#SymbolName(a:plist[i])
+            echomsg "Key" key "from" a:plist[i]
+        if key != ''
+            let d[key] = a:plist[i+1]
+        endif
         let i += 2
     endwhile
     return d
@@ -1445,7 +1451,7 @@ endfunction
 " Parse a source location object {loc} sent from the server, and convert it
 " into a native |dict|.
 function! vlime#ParseSourceLocation(loc)
-    if type(a:loc[0]) != v:t_dict || a:loc[0]['name'] != 'LOCATION'
+    if type(a:loc[0]) != v:t_dict || a:loc[0] != vlime#KW('LOCATION')
         throw 'vlime#ParseSourceLocation: invalid location: ' . string(a:loc)
     endif
 
@@ -1456,7 +1462,7 @@ function! vlime#ParseSourceLocation(loc)
             continue
         endif
 
-        if len(p) == 1
+        if len(p) == 1 " PM TODO
             let loc_obj[p[0]['name']] = v:null
         elseif len(p) == 2
             let loc_obj[p[0]['name']] = p[1]
@@ -1667,33 +1673,58 @@ endfunction
 " @private
 "
 " Return a Common Lisp symbol serialized using the Vlime protocol. An ad-hoc
-" measure to export s:SYM().
-function! vlime#SYM(package, name)
-    return s:SYM(a:package, a:name)
+" measure to export vlime#Sym().
+function! vlime#Sym(package, name)
+    " TODO: only works for simple names; no || supported yet
+    return "§§" . a:package . "::" . a:name
 endfunction
 
 ""
 " @private
 "
-" Return a Common Lisp keyword serialized using the Vlime protocol. An ad-hoc
-" measure to export s:KW().
+" Return a Common Lisp keyword serialized using the Vlime protocol.
 function! vlime#KW(name)
-    return s:KW(a:name)
+    return "§§::" . a:name
 endfunction
 
-""
-" @private
-"
-" Return a Common Lisp symbol in the CL package, serialized using the Vlime
-" protocol. An ad-hoc measure to export s:CL().
-function! vlime#CL(name)
-    return s:CL(a:name)
+
+function! s:SplitSymbol(sym, keyword_pkg_as_empty)
+    " Either §§:KEYWORD or §§PKG::SYM
+    let m = matchlist(a:sym, '\v^§§(::?(.*)|([^:]+)::(.+))$')
+    if len(m) == 0
+        return [v:null, v:null]
+    elseif m[2] != ''
+        return [a:keyword_pkg_as_empty ? '' : 'KEYWORD', m[2]]
+    else
+        return [m[3], m[4]]
+    endif
 endfunction
+
+function! vlime#SymbolName(sym)
+    return s:SplitSymbol(a:sym, 0)[1]
+endfunction
+
+" Returns the package of a symbol. 'KEYWORD' for keywords.
+function! vlime#SymbolPackage(sym)
+    return s:SplitSymbol(a:sym, 0)[0]
+endfunction
+
+function! vlime#SymbolAsString(sym)
+    let [pkg, name] =  s:SplitSymbol(a:sym, 0)
+    if pkg == 'KEYWORD'
+        return ':' . name
+    elseif pkg == 'COMMON-LISP'
+        return name
+    else
+        return pkg . '::' . name
+    endif
+endfunction
+
 
 function! s:SearchPList(plist, name)
     let i = 0
     while i < len(a:plist)
-        if a:plist[i]['name'] == a:name
+        if a:plist[i] == vlime#KW(a:name)
             return a:plist[i+1]
         endif
         let i += 2
@@ -1701,28 +1732,14 @@ endfunction
 
 function! s:CheckReturnStatus(return_msg, caller)
     let status = a:return_msg[1][0]
-    if status['name'] != 'OK'
+    echomsg "got status" status
+    if status != vlime#KW('OK')
         throw a:caller . ' returned: ' . string(a:return_msg[1])
     endif
 endfunction
 
-function! s:SYM(package, name)
-    "return {'name': a:name, 'package': a:package}
-    " TODO: only works for simple names; no || supported yet
-    return "§§" . a:package . "::" . a:name
-endfunction
-
-function! s:KW(name)
-    "return s:SYM('KEYWORD', a:name)
-    return "§:" . a:name
-endfunction
-
-function! s:CL(name)
-    return s:SYM('COMMON-LISP', a:name)
-endfunction
-
 function! s:EmacsRex(cmd, pkg, thread)
-    return [s:KW('EMACS-REX'), a:cmd, a:pkg, a:thread]
+    return [vlime#KW('EMACS-REX'), a:cmd, a:pkg, a:thread]
 endfunction
 
 function! s:TryToCall(Callback, args)
@@ -1738,7 +1755,7 @@ function! s:FixXRefListPaths(conn, xref_list)
     endif
 
     for spec in a:xref_list
-        if type(spec[0]) == v:t_string && spec[1][0]['name'] == 'LOCATION'
+        if type(spec[0]) == v:t_string && spec[1][0] == vlime#KW('LOCATION')
             let spec[1] = a:conn.FixRemotePath(spec[1])
         endif
     endfor
@@ -1748,9 +1765,9 @@ function! s:TransformCompilerPolicy(policy)
     if type(a:policy) == v:t_dict
         let plc_list = []
         for [key, val] in items(a:policy)
-            call add(plc_list, {'head': [s:CL(key)], 'tail': val})
+            call add(plc_list, {'head': [vlime#Sym("COMMON-LISP", key)], 'tail': val})
         endfor
-        return [s:CL('QUOTE'), plc_list]
+        return [vlime#Sym("COMMON-LISP", 'QUOTE'), plc_list]
     else
         return a:policy
     endif
@@ -1827,9 +1844,9 @@ endfunction
 function! vlime#KeywordList2Dict(input)
     if type(a:input) == v:t_list
         let dct = {}
-        for el in a:input
-            if type(el) == v:t_list && type(el[0]) == v:t_dict && el[0]["package"] == 'KEYWORD'
-                let dct[ el[0]["name"] ] = el[1]
+        for el in a:input " PM TODO
+            if type(el) == v:t_list && vlime#SymbolPackage(el[0]) == 'KEYWORD'
+                let dct[ vlime#SymbolName(el[0]) ] = el[1]
             endif
         endfor
         return dct

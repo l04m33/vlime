@@ -15,7 +15,7 @@ function! vlime#contrib#fuzzy#FuzzyCompletions(symbol, ...) dict
         let cur_package = cur_package[0]
     endif
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK', 'FUZZY-COMPLETIONS'), a:symbol, cur_package]),
+                    \ [vlime#Sym('SWANK', 'FUZZY-COMPLETIONS'), a:symbol, cur_package]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#fuzzy#FuzzyCompletions']))
 endfunction

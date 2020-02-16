@@ -12,7 +12,7 @@
 function! vlime#contrib#presentations#InspectPresentation(pres_id, reset, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK', 'INSPECT-PRESENTATION'), a:pres_id, a:reset]),
+                    \ [vlime#Sym('SWANK', 'INSPECT-PRESENTATION'), a:pres_id, a:reset]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#presentations#InspectPresentation']))
 endfunction
@@ -25,7 +25,7 @@ function! vlime#contrib#presentations#Init(conn)
     let a:conn['server_event_handlers']['PRESENTATION-END'] =
                 \ function('s:OnPresentationEnd')
     call a:conn.Send(a:conn.EmacsRex(
-                    \ [vlime#SYM('SWANK', 'INIT-PRESENTATIONS')]),
+                    \ [vlime#Sym('SWANK', 'INIT-PRESENTATIONS')]),
                 \ function('vlime#SimpleSendCB',
                     \ [a:conn, v:null, 'vlime#contrib#presentations#Init']))
 endfunction

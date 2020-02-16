@@ -10,7 +10,7 @@
 function! vlime#contrib#trace_dialog#ClearTraceTree(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'CLEAR-TRACE-TREE')]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'CLEAR-TRACE-TREE')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#ClearTraceTree']))
 endfunction
@@ -29,7 +29,7 @@ endfunction
 function! vlime#contrib#trace_dialog#DialogToggleTrace(name, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'DIALOG-TOGGLE-TRACE'),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'DIALOG-TOGGLE-TRACE'),
                         \ s:TranslateFunctionSpec(a:name)]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#DialogToggleTrace']))
@@ -49,7 +49,7 @@ function! vlime#contrib#trace_dialog#DialogTrace(name, ...) dict
     let Callback = get(a:000, 0, v:null)
     let pkg = s:GetCurrentPackage(self)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'DIALOG-TRACE'),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'DIALOG-TRACE'),
                         \ s:TranslateFunctionSpec(a:name)]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#DialogTrace']))
@@ -69,7 +69,7 @@ function! vlime#contrib#trace_dialog#DialogUntrace(name, ...) dict
     let Callback = get(a:000, 0, v:null)
     let pkg = s:GetCurrentPackage(self)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'DIALOG-UNTRACE'),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'DIALOG-UNTRACE'),
                         \ s:TranslateFunctionSpec(a:name)]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#DialogUntrace']))
@@ -87,7 +87,7 @@ endfunction
 function! vlime#contrib#trace_dialog#DialogUntraceAll(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'DIALOG-UNTRACE-ALL')]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'DIALOG-UNTRACE-ALL')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#DialogUntraceAll']))
 endfunction
@@ -104,7 +104,7 @@ endfunction
 function! vlime#contrib#trace_dialog#FindTrace(id, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'FIND-TRACE'), a:id]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'FIND-TRACE'), a:id]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#FindTrace']))
 endfunction
@@ -123,7 +123,7 @@ endfunction
 function! vlime#contrib#trace_dialog#FindTracePart(id, part_id, type, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'FIND-TRACE-PART'),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'FIND-TRACE-PART'),
                         \ a:id, a:part_id, vlime#KW(a:type)]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#FindTracePart']))
@@ -142,7 +142,7 @@ endfunction
 function! vlime#contrib#trace_dialog#InspectTracePart(id, part_id, type, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'INSPECT-TRACE-PART'),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'INSPECT-TRACE-PART'),
                         \ a:id, a:part_id, vlime#KW(a:type)]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#InspectTracePart']))
@@ -162,7 +162,7 @@ endfunction
 function! vlime#contrib#trace_dialog#ReportPartialTree(key, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'REPORT-PARTIAL-TREE'), a:key]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'REPORT-PARTIAL-TREE'), a:key]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#ReportPartialTree']))
 endfunction
@@ -179,7 +179,7 @@ endfunction
 function! vlime#contrib#trace_dialog#ReportSpecs(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'REPORT-SPECS')]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'REPORT-SPECS')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#ReportSpecs']))
 endfunction
@@ -196,7 +196,7 @@ endfunction
 function! vlime#contrib#trace_dialog#ReportTotal(...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'REPORT-TOTAL')]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'REPORT-TOTAL')]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#ReportTotal']))
 endfunction
@@ -213,7 +213,7 @@ endfunction
 function! vlime#contrib#trace_dialog#ReportTraceDetail(id, ...) dict
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-TRACE-DIALOG', 'REPORT-TRACE-DETAIL'), a:id]),
+                    \ [vlime#Sym('SWANK-TRACE-DIALOG', 'REPORT-TRACE-DETAIL'), a:id]),
                 \ function('vlime#SimpleSendCB',
                     \ [self, Callback, 'vlime#contrib#trace_dialog#ReportTraceDetail']))
 endfunction
@@ -235,7 +235,7 @@ endfunction
 
 function! s:TranslateFunctionSpec(spec)
     if type(a:spec) == v:t_string
-        return [vlime#SYM('SWANK', 'FROM-STRING'), a:spec]
+        return [vlime#Sym('SWANK', 'FROM-STRING'), a:spec]
     else
         return a:spec
     endif

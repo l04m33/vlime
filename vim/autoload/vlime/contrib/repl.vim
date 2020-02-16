@@ -20,7 +20,7 @@ function! vlime#contrib#repl#CreateREPL(...) dict
         call vlime#TryToCall(a:Callback, [a:conn, a:msg[1][1]])
     endfunction
 
-    let cmd = [vlime#SYM('SWANK-REPL', 'CREATE-REPL'), v:null]
+    let cmd = [vlime#Sym('SWANK-REPL', 'CREATE-REPL'), v:null]
     let coding_system = get(a:000, 0, v:null)
     if coding_system != v:null
         let cmd += [vlime#KW('CODING-SYSTEM'), coding_system]
@@ -53,7 +53,7 @@ function! vlime#contrib#repl#ListenerEval(expr, ...) dict
 
     let Callback = get(a:000, 0, v:null)
     call self.Send(self.EmacsRex(
-                    \ [vlime#SYM('SWANK-REPL', 'LISTENER-EVAL'), a:expr]),
+                    \ [vlime#Sym('SWANK-REPL', 'LISTENER-EVAL'), a:expr]),
                 \ function('s:ListenerEvalCB', [self, Callback]))
 endfunction
 
@@ -65,9 +65,9 @@ endfunction
 
 function! s:CheckAndReportReturnStatus(conn, return_msg, caller)
     let status = a:return_msg[1][0]
-    if status['name'] == 'OK'
+    if status == vlime#KW('OK')
         return v:true
-    elseif status['name'] == 'ABORT'
+    elseif status == vlime#KW('ABORT')
         call a:conn.ui.OnWriteString(a:conn, a:return_msg[1][1] . "\n",
                     \ vlime#KW('ABORT-REASON'))
         return v:false

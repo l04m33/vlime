@@ -90,8 +90,8 @@ function! vlime#ui#mrepl#Disconnect()
     let remote_chan = b:vlime_conn['remote_channels'][remote_chan_id]
     let remote_thread = remote_chan['mrepl']['thread']
     let cmd = [vlime#KW('EMACS-REX'),
-                \ [vlime#SYM('SWANK/BACKEND', 'KILL-THREAD'),
-                    \ [vlime#SYM('SWANK/BACKEND', 'FIND-THREAD'), remote_thread]],
+                \ [vlime#Sym('SWANK/BACKEND', 'KILL-THREAD'),
+                    \ [vlime#Sym('SWANK/BACKEND', 'FIND-THREAD'), remote_thread]],
                 \ v:null, v:true]
     call b:vlime_conn.Send(cmd,
                 \ function('vlime#SimpleSendCB',

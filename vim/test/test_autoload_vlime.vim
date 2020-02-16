@@ -141,10 +141,10 @@ endfunction
 
 function! TestEmacsRex()
     let conn = vlime#New()
-    let rex = conn.EmacsRex([vlime#SYM('SWANK', 'CONNECTION-INFO')])
+    let rex = conn.EmacsRex([vlime#Sym('SWANK', 'CONNECTION-INFO')])
     call assert_equal([
                     \ vlime#KW('EMACS-REX'),
-                    \ [vlime#SYM('SWANK', 'CONNECTION-INFO')],
+                    \ [vlime#Sym('SWANK', 'CONNECTION-INFO')],
                     \ v:null, v:true],
                 \ rex)
 endfunction

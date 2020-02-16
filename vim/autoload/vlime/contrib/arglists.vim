@@ -14,8 +14,8 @@ function! vlime#contrib#arglists#Autodoc(raw_form, ...) dict
     let margin = get(a:000, 0, v:null)
     let Callback = get(a:000, 1, v:null)
     let cmd = (type(margin) == type(v:null)) ?
-                \ [vlime#SYM('SWANK', 'AUTODOC'), a:raw_form] :
-                \ [vlime#SYM('SWANK', 'AUTODOC'), a:raw_form,
+                \ [vlime#Sym('SWANK', 'AUTODOC'), a:raw_form] :
+                \ [vlime#Sym('SWANK', 'AUTODOC'), a:raw_form,
                     \ vlime#KW('PRINT-RIGHT-MARGIN'), margin]
     call self.Send(self.EmacsRex(cmd),
                 \ function('vlime#SimpleSendCB',

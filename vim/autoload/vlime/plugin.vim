@@ -214,9 +214,8 @@ function! vlime#plugin#ConnectREPL(...)
 
     " Switch to JSON
     " " [s:KW('EMACS-REX'), a:cmd, a:pkg, a:thread]
-    call chansend(conn.channel.ch_id, "000026(:emacs-rex (vlime::use-json) :cl t 1)")
-    " Need to wait!
-    sleep   1
+    call chansend(conn.channel.ch_id, "000026(:emacs-rex (vlime::use-json) :cl t 0)")
+
     call vlime#ChainCallbacks(
                 \ function(conn.ConnectionInfo, [v:true]),
                 \ function('s:OnConnectionInfoComplete'),
@@ -1276,9 +1275,10 @@ function! s:OnSwankRequireCallInitializersComplete(added, conn)
 endfunction
 
 function! s:OnConnectionInfoComplete(conn, result)
-    let a:conn.cb_data['version'] = get(a:result, 'VERSION', '<unkown version>')
-    let a:conn.cb_data['pid'] = get(a:result, 'PID', '<unknown pid>')
-    let features = get(a:result, 'FEATURES', [])
+    let res_dict = vlime#PListToDict(a:result)
+    let a:conn.cb_data['version'] = get(res_dict, vlime#KW('VERSION'), '<unkown version>')
+    let a:conn.cb_data['pid'] = get(res_dict, vlime#KW('PID'), '<unknown pid>')
+    let features = get(res_dict, vlime#KW('FEATURES'), [])
     if type(features) == type(v:null)
         let features = []
     endif
@@ -1423,7 +1423,7 @@ endfunction
 
 function! s:OnListenerEvalComplete(conn, result)
     if type(a:result) == v:t_list && len(a:result) > 0 &&
-                \ type(a:result[0]) == v:t_dict && a:result[0]['name'] == 'VALUES' &&
+                \ a:result[0] == vlime#KW('VALUES') &&
                 \ type(a:conn.ui) != type(v:null)
         let values = a:result[1:]
         if len(values) > 0

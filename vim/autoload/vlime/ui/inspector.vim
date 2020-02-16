@@ -103,7 +103,7 @@ function! vlime#ui#inspector#FillInspectorBufContent(content, coords)
             call add(a:coords, {
                         \ 'begin': [begin_pos[1], begin_pos[2]],
                         \ 'end': [end_pos[1], end_pos[2]],
-                        \ 'type': a:content[0]['name'],
+                        \ 'type': vlime#SymbolAsString(a:content[0]), " TODO: full sym or name only?
                         \ 'id': a:content[2],
                         \ })
         else
@@ -290,7 +290,7 @@ function! s:FindSourceCB(edit_cmd, win_to_go, force_open, conn, msg)
         endif
 
         call vlime#ui#ShowSource(a:conn, valid_loc, a:edit_cmd, a:force_open)
-    elseif type(a:msg) != type(v:null) && a:msg[0]['name'] == 'ERROR'
+    elseif type(a:msg) != type(v:null) && a:msg[0] == vlime#KW('ERROR')
         call vlime#ui#ErrMsg(a:msg[1])
     else
         call vlime#ui#ErrMsg('No source available.')

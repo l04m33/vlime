@@ -130,6 +130,7 @@ function! s:NormalizeFieldValue(val)
         return a:val
     elseif type(a:val) == v:t_dict
         " headers
+        echomsg "NormalizeFieldValue got" a:val['name']
         return a:val['name']
     else
         return string(a:val)
